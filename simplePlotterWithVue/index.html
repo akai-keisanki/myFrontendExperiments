@@ -5,10 +5,10 @@
     <title>Simple plotter</title>
     <script src=https://unpkg.com/vue@3></script>
     <style>
-      #canvas
+      .canvas
       {
         display: flex;
-        flex_direction: row;
+        flex-direction: row;
       }
 
       .col
@@ -28,60 +28,100 @@
   </head>
   <body>
     <main id=app>
-      <div id=canvas>
-        <div class=col v-for='i in canvasColN' :style=colStyle>
-          <div class=colCtt :id='`col${i}`' :style=colCttStyle[i-1]></div>
-        </div>
+      <plotter-canvas :col-n=canvas.colN :width=canvas.width :height=canvas.height :unity=canvas.unity :function-expression=functionExpression></plotter-canvas>
+      <hr>
+      <div>
+        <input type=text v-model=functionExpression />
+        <input type=number v-model.number=canvas.width />
+        <input type=number v-model.number=canvas.height />
+        <input type=number v-model.number=canvas.unity />
+        <button @click=plot()>Plot</button>
       </div>
-      <input type=text v-model=functionExpression />
-      <input type=number v-model=canvasWidth />
-      <input type=number v-model=canvasHeight />
-      <input type=number v-model=canvasUnity />
-      <button @click=plot()>Plot</button>
     </main>
     <script>
       const {createApp, ref, reactive, computed} = Vue;
 
       function setup()
       {
-        const canvasColN = ref(300);
-        const canvasWidth = ref(300);
-        const canvasHeight = ref(300);
-        const canvasUnity = ref(100);
+        const canvas = reactive({
+            colN: 600,
+            width: 300,
+            height: 300,
+            unity: 100,
+          });
 
         const functionExpression = ref('0.5*x');
-
-        const colStyle = computed(() => {
-            return {
-                height: `${canvasHeight.value}px`,
-                width: `${canvasWidth.value / canvasColN.value}px`
-              };
-          });
-
-        const colCttStyle = computed(() => {
-            const styleList = [];
-
-            for (let i = 0; i < canvasColN.value; ++i)
-            {
-              let x = i * canvasWidth.value / canvasColN.value / canvasUnity.value;
-              
-              styleList.push({
-                  height: `${Math.max(Math.min(eval(functionExpression.value) * canvasUnity.value, canvasHeight.value), 0)}px`
-                });
-            }
-
-            return styleList;
-          });
     
         function plot()
         {
           alert('WIP!');
         }
 
-        return { canvasColN, canvasWidth, canvasHeight, canvasUnity, functionExpression, colStyle, colCttStyle, plot };
+        return { canvas, functionExpression, plot };
       }
 
       app = createApp({ setup });
+
+      app.component('plotterCanvas',
+      {
+        template: `
+            <div class=canvas>
+              <div class=col v-for='i in colN' :style=colStyle>
+                <div class=colCtt :style=colCttStyle[i-1]></div>
+              </div>
+            </div>
+          `,
+        props: {
+            height: {
+                type: Number,
+                default: 500,
+              },
+            width: {
+                type: Number,
+                default: 500
+              },
+            colN: {
+                type: Number,
+                default: 100
+              },
+            unity: {
+                type: Number,
+                default: 1
+              },
+            functionExpression: {
+                type: String,
+                default: 'x'
+              }
+          },
+        setup(props)
+        {
+          const colStyle = computed(() =>
+          {
+            return {
+                height: `${props.height}px`,
+                width: `${props.width / props.colN}px`
+              };
+          });
+
+          const colCttStyle = computed(() =>
+          {
+            const styleList = [];
+            
+            for (let i = 0; i < props.colN; ++i)
+            {
+              let x = i * props.width / props.colN / props.unity;
+              
+              styleList.push({
+                  height: `${Math.max(Math.min(eval(props.functionExpression) * props.unity, props.height), 0)}px`
+                });
+            }
+
+            return styleList;
+          });
+
+          return { colN: props.colN, colStyle, colCttStyle };
+        }
+      });
 
       app.mount('#app');
     </script>
