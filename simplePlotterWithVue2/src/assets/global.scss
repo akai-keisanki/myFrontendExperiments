@@ -1,0 +1,14 @@
+@forward 'variables';
+@use 'variables' as *;
+
+body {
+  font-family: Lato sans-serif;
+  color: $fg-1;
+  background-color: $bg-1;
+  min-height: 100vh;
+  line-height: 1.6;
+  font-size: 15px;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
